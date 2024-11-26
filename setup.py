@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-from setuptools import setup
 from Cython.Distutils import Extension
 from Cython.Build import cythonize
 import numpy
