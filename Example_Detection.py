@@ -35,15 +35,13 @@ satpy.config.set({'cache_sensor_angles': False})
 satpy.config.set({'cache_lonlats': True})
 
 # Final imports
-from pyfires.PYF_basic import initial_load, save_output_csv, save_output, set_default_values
+from pyfires.PYF_basic import initial_load, save_output_csv, set_default_values
 from pyfires.PYF_detection import run_dets
-import pyfires.PYF_Consts as PYFc
 from satpy import Scene
 from tqdm import tqdm
 from glob import glob
 import os
 
-from dask.diagnostics import Profiler, ResourceProfiler, visualize
 from datetime import datetime
 
 # Satpy sometimes spits out some warnings for divide by zero.
