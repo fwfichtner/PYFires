@@ -13,3 +13,9 @@ or with dev dependencies:
 ```bash
 uv sync
 ```
+
+Build the extension:
+
+```bash
+python setup.py build_ext --inplace
+```

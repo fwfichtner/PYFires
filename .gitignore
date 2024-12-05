@@ -1,2 +1,10 @@
 /.venv
 /.ruff_cache
+testfiles/
+__pycache__/
+
+# extension
+build/
+*.c
+*.so
+*.html
