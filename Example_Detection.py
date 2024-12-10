@@ -22,6 +22,8 @@
 # By default Dask will use all available CPU cores. On powerful machines this can
 # actually slow down processing, so here we limit the cores it can use.
 # For more info, see: https://satpy.readthedocs.io/en/stable/faq.html#why-is-satpy-slow-on-my-powerful-machine
+from pathlib import Path
+from tempfile import gettempdir
 import dask
 dask.config.set(num_workers=2)
 
@@ -30,7 +32,7 @@ dask.config.set(num_workers=2)
 # But we do not cache the sensor angles, and for Himawari these do change!
 # For processing other satellites you may want to cache the angles.
 import satpy
-satpy.config.set({'cache_dir': "/home/ubuntu/data/cache/"})
+satpy.config.set({'cache_dir': str(Path(f"{gettempdir()}").joinpath('cache'))})
 satpy.config.set({'cache_sensor_angles': False})
 satpy.config.set({'cache_lonlats': True})
 
@@ -53,9 +55,11 @@ warnings.filterwarnings('ignore')
 def main():
     with dask.config.set({"array.chunk-size": "10MiB"}):
         # Set the top-level input directory (containing ./HHMM/ subdirs following NOAA AWS format)
-        input_file_dir = '/home/ubuntu/data/him/'
+        input_file_dir = Path("testfiles").joinpath("in/him")
         # Set the output directory where FRP images will be saved.
-        output_img_dir = '/home/ubuntu/data/out/'
+        output_img_dir = Path("testfiles").joinpath("out/him")
+        output_img_dir.mkdir(parents=True, exist_ok=True)
+        output_img_dir = str(output_img_dir)
 
         # Set an X-Y bounding box for cropping the input data.
         bbox = None
@@ -81,7 +85,9 @@ def main():
             st = datetime.utcnow()
             # Find files and ensure we have enough to process.
             ifiles_l15 = glob(cdir+'/*.DAT')
+            # # find_files_and_readers(base_dir=cdir, reader="ahi_hsd")
             if len(ifiles_l15) < 40:
+                print(f"Not enough files in {cdir}")
                 continue
 
             # Create a simple Scene to simplift saving the results.
@@ -107,7 +113,7 @@ def main():
                 data_dict = initial_load(ifiles_l15,        # Input file list
                                          'ahi_hsd',         # Satpy reader name
                                          bdict,             # Band mapping dict
-                                         do_load_lsm=True,  # Don't load land-sea mask
+                                         do_load_lsm=False,  # Don't load land-sea mask
                                          bbox=bbox)         # Bounding box for cropping
 
                 # Set up the constants used during processing

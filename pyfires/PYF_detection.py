@@ -259,6 +259,7 @@ def run_dets(data_dict, do_night=False):
                            perc_thresh=data_dict['perc_thresh'],
                            depth=data_dict['max_wsize'],
                            trim=False,
+                           allow_rechunk=True,
                            boundary=999,
                            meta=(np.array((), dtype=np.float32)),
                            dtype=np.float32,
