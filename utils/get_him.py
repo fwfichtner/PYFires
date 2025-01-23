@@ -4,7 +4,7 @@ import s3fs
 from pathlib import Path
 
 
-def get_him(date_str: str = "2024/12/09", ts: str = "0120"):
+def get_him(date_str: str = "2025/01/23", ts: str = "0120"):
     """
     Get HIM data from S3 and unpack.
     """
@@ -19,7 +19,7 @@ def get_him(date_str: str = "2024/12/09", ts: str = "0120"):
             compressed_data = f.read()
         
         decompressed_data = bz2.decompress(compressed_data)
-
+        dest.joinpath(ts).mkdir(parents=True, exist_ok=True)
         output_file = dest.joinpath(ts).joinpath(Path(file.removesuffix(".bz2")).name)
         with open(output_file, 'wb') as f:
             f.write(decompressed_data)
