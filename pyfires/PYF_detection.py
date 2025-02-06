@@ -246,7 +246,7 @@ def run_dets(data_dict, do_night=False):
 
     rechunk_size = data_dict['PFP'].chunksize # needs to be optimised
     for key in data_dict.keys():
-        if isinstance(data_dict[key], dask.array.Array) and data_dict[key].chunksize != rechunk_size:
+        if isinstance(data_dict[key], dask.array.Array):
             data_dict[key] = data_dict[key].rechunk(rechunk_size)
     
     outan = da.map_overlap(do_windowed,
