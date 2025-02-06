@@ -244,21 +244,15 @@ def run_dets(data_dict, do_night=False):
                                     kern_thresh_sza_adj=data_dict['kern_thresh_sza_adj'],
                                     lsm_land_val=data_dict['lsm_val'])
 
-    rechunk_size = (300,300)
-    for key in data_dict.keys():
-        if isinstance(data_dict[key], dask.array.Array) and data_dict[key].chunks != rechunk_size:
-            data_dict[key] = data_dict[key].rechunk(rechunk_size)
-    
-    
     outan = da.map_overlap(do_windowed,
                            data_dict['PFP'],
-                           data_dict['VI1_RAD'], # error
-                           data_dict['LW1__BT'], # error
-                           data_dict['BTD'], # error
-                           data_dict['MIR__BT'], # error
-                           data_dict['VI1_DIFF'], # error
-                           data_dict['LSM'], # works
-                           data_dict['LATS'], # works
+                           data_dict['VI1_RAD'],
+                           data_dict['LW1__BT'],
+                           data_dict['BTD'],
+                           data_dict['MIR__BT'],
+                           data_dict['VI1_DIFF'],
+                           data_dict['LSM'],
+                           data_dict['LATS'],
                            min_wsize=data_dict['min_wsize'],
                            max_wsize=data_dict['max_wsize'],
                            lsm_val=data_dict['lsm_val'],

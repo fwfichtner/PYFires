@@ -37,9 +37,9 @@ satpy.config.set({'cache_sensor_angles': False})
 satpy.config.set({'cache_lonlats': True})
 
 # Final imports
-from pyfires.PYF_basic import initial_load, save_output_csv, set_default_values, sort_l1
+from pyfires.PYF_basic import initial_load, save_output_csv, set_default_values
 from pyfires.PYF_detection import run_dets
-from satpy import Scene, find_files_and_readers, DataQuery
+from satpy import Scene, find_files_and_readers
 
 
 from datetime import datetime, timezone
@@ -77,43 +77,24 @@ def main():
             print("Not enough files")
             return
 
+        # Create a simple Scene to simplift saving the results.
+        scn = Scene(files)
+        scn.load([bdict['mir_band']])
+        if bbox:
+            scn = scn.crop(xy_bbox=bbox)
+
         # Load the initial data.
         fci_files = [str(f) for f in input_file_dir.glob("*.nc")]
-        
-        # Construct queries
-        vi1_rad = DataQuery(name=bdict['vi1_band'], calibration="radiance")
-        vi2_rad = DataQuery(name=bdict['vi2_band'], calibration="radiance")
-        mir_rad = DataQuery(name=bdict['mir_band'], calibration="radiance")
-        mir_bt = DataQuery(name=bdict['mir_band'], calibration="brightness_temperature")
-        lwi_rad = DataQuery(name=bdict['lwi_band'], calibration="radiance")
-        lwi_bt = DataQuery(name=bdict['lwi_band'], calibration="brightness_temperature")
-
-        blist = [vi1_rad, vi2_rad, mir_rad, lwi_rad, mir_bt, lwi_bt]
-
-        scn = Scene(fci_files, reader='fci_l1c_nc')
-        scn.load(blist, calibration='radiance', generate=False)
-
-        if bbox:
-            scn = scn.crop(ll_bbox=bbox)
-
-        scnr = scn.resample(scn.coarsest_area(), resampler='native')
-
-        
         # Here we don't load the land/sea mask as we're cropping and this is
         # not (yet) supported by pyfires. For full disk processing you will
         # likely get more accurate results by enabling the land/sea mask.
-        data_dict = sort_l1(
-            scnr[vi1_rad],
-            scnr[vi2_rad],
-            scnr[mir_rad],
-            scnr[lwi_rad],
-            scnr[mir_bt],
-            scnr[lwi_bt],
-            bdict,
-            do_load_lsm=False,
-        )
+        data_dict = initial_load(fci_files,        # Input file list
+                                    'fci_l1c_nc',         # Satpy reader name
+                                    bdict,             # Band mapping dict
+                                    do_load_lsm=False,  # Don't load land-sea mask
+                                    bbox=bbox)         # Bounding box for cropping
 
-        # # Set up the constants used during processing
+        # Set up the constants used during processing
         data_dict = set_default_values(data_dict)
 
         # Run the detection algorithm. This returns a boolean mask of the
