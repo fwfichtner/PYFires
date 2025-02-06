@@ -244,6 +244,11 @@ def run_dets(data_dict, do_night=False):
                                     kern_thresh_sza_adj=data_dict['kern_thresh_sza_adj'],
                                     lsm_land_val=data_dict['lsm_val'])
 
+    rechunk_size = data_dict['PFP'].chunksize # needs to be optimised
+    for key in data_dict.keys():
+        if isinstance(data_dict[key], dask.array.Array) and data_dict[key].chunksize != rechunk_size:
+            data_dict[key] = data_dict[key].rechunk(rechunk_size)
+    
     outan = da.map_overlap(do_windowed,
                            data_dict['PFP'],
                            data_dict['VI1_RAD'],
