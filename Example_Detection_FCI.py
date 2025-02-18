@@ -37,7 +37,7 @@ satpy.config.set({'cache_sensor_angles': False})
 satpy.config.set({'cache_lonlats': True})
 
 # Final imports
-from pyfires.PYF_basic import initial_load, save_output_csv, set_default_values, sort_l1
+from pyfires.PYF_basic import save_output_csv, set_default_values, sort_l1
 from pyfires.PYF_detection import run_dets
 from satpy import Scene, find_files_and_readers, DataQuery
 
@@ -119,24 +119,9 @@ def main():
         # Here we don't load the land/sea mask as we're cropping and this is
         # not (yet) supported by pyfires. For full disk processing you will
         # likely get more accurate results by enabling the land/sea mask.
-        initial_load_data_dict = initial_load(
-            fci_files,          # Input file list
-            'fci_l1c_nc',       # Satpy reader name
-            bdict,              # Band mapping dict
-            do_load_lsm=False,  # Don't load land-sea mask
-            bbox=bbox           # Bounding box for cropping
-        )
-
-        alternative_load_data_dict = alternative_load(
-            fci_files,          # Input file list
-            'fci_l1c_nc',       # Satpy reader name
-            bdict,              # Band mapping dict
-            do_load_lsm=False,  # Don't load land-sea mask
-            bbox=bbox           # Bounding box for cropping
-        )
-
-        
-        # direct load
+    
+        # Direct load - Using the data_dict returned by initial_load will crash the program at L168 with RuntimeError: NetCDF: Not a valid ID.
+        # Removed the initial_load function and moved the initial_load code and sort_l1 here.
         vi1_rad = DataQuery(name=bdict['vi1_band'], calibration="radiance")
         vi2_rad = DataQuery(name=bdict['vi2_band'], calibration="radiance")
         mir_rad = DataQuery(name=bdict['mir_band'], calibration="radiance")
@@ -147,7 +132,7 @@ def main():
         blist = [vi1_rad, vi2_rad, mir_rad, lwi_rad, mir_bt, lwi_bt]
 
         scn = Scene(fci_files, reader='fci_l1c_nc')
-        scn.load(blist, calibration='radiance', generate=False)
+        scn.load(blist, generate=False) # calibration has been defined in the DataQuery
 
         if bbox:
             scn = scn.crop(xy_bbox=bbox)
