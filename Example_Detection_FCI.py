@@ -50,42 +50,6 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-def alternative_load(
-    infiles_l1,
-    l1_reader,
-    bdict,
-    do_load_lsm=True,
-    bbox=None,
-) -> dict:
-    # Construct queries
-    vi1_rad = DataQuery(name=bdict['vi1_band'], calibration="radiance")
-    vi2_rad = DataQuery(name=bdict['vi2_band'], calibration="radiance")
-    mir_rad = DataQuery(name=bdict['mir_band'], calibration="radiance")
-    mir_bt = DataQuery(name=bdict['mir_band'], calibration="brightness_temperature")
-    lwi_rad = DataQuery(name=bdict['lwi_band'], calibration="radiance")
-    lwi_bt = DataQuery(name=bdict['lwi_band'], calibration="brightness_temperature")
-
-    blist = [vi1_rad, vi2_rad, mir_rad, lwi_rad, mir_bt, lwi_bt]
-
-    scn = Scene(infiles_l1, reader=l1_reader)
-    scn.load(blist, calibration='radiance', generate=False)
-
-    if bbox:
-        scn = scn.crop(xy_bbox=bbox)
-
-    scnr = scn.resample(scn.coarsest_area(), resampler='native')
-    return sort_l1(
-        scnr[vi1_rad],
-        scnr[vi2_rad],
-        scnr[mir_rad],
-        scnr[lwi_rad],
-        scnr[mir_bt],
-        scnr[lwi_bt],
-        bdict,
-        do_load_lsm=do_load_lsm,
-    )
-
-
 def main():
     with dask.config.set({"array.chunk-size": "10MiB"}):
         # Set the top-level input directory (containing ./HHMM/ subdirs following NOAA AWS format)
@@ -114,7 +78,7 @@ def main():
             return
 
         # Load the initial data.
-        fci_files = [str(f) for f in input_file_dir.glob("*.nc")]
+        fci_files = [str(f) for f in input_file_dir.glob("W_XX*BODY*.nc")]
 
         # Here we don't load the land/sea mask as we're cropping and this is
         # not (yet) supported by pyfires. For full disk processing you will
